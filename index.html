@@ -395,7 +395,6 @@
     <div class="filter-bar">
       <span class="filter-label">Checklist:</span>
       <div class="segmented-control" id="viewSelector">
-        <!-- Ícono Encendido PRO (Futurista / Núcleo de Energía) -->
         <button class="segment-btn active" data-val="encendido">
           <svg class="grad-icon" viewBox="0 0 24 24" fill="none" stroke="url(#powGrad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <defs><linearGradient id="powGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f0a93b"/><stop offset="50%" stop-color="#35d68c"/><stop offset="100%" stop-color="#52c7d9"/></linearGradient></defs>
@@ -414,7 +413,7 @@
       </div>
     </div>
 
-    <p class="intro">Marca cada punto conforme se va completando. <strong>Se guarda automáticamente en el servidor</strong> para consulta general. Añade comentarios al final de la lista.</p>
+    <p class="intro">Marca cada punto conforme se va completando. <strong>Se guarda automáticamente</strong> para consulta general. Añade comentarios al final de la lista.</p>
 
     <main class="panels">
 
@@ -423,7 +422,6 @@
         <div class="panel-head">
           <div class="title-row">
             <h2>
-              <!-- Ícono Pro de Encendido en la cabecera del checklist -->
               <svg class="grad-icon" viewBox="0 0 24 24" fill="none" stroke="url(#powGrad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"></path>
                 <circle cx="12" cy="12" r="4"></circle>
@@ -453,7 +451,7 @@
         <div class="share-actions" id="share-encendido" style="display: none;">
           <span class="share-title">Compartir Resultados:</span>
           <button class="icon-btn" data-action="share" data-target="encendido" title="Compartir">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="share-icon-svg" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="share-icon-svg" fill="none" stroke="url(#shareGrad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle>
               <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
             </svg>
@@ -468,7 +466,6 @@
         <div class="panel-head">
           <div class="title-row">
             <h2>
-              <!-- Ícono de Transmisión en la cabecera del checklist -->
               <svg class="grad-icon" viewBox="0 0 24 24" fill="none" stroke="url(#liveGrad)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M23 7l-7 5 7 5V7z"></path><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
               </svg>
@@ -513,16 +510,6 @@
       <button class="btn" id="newWeekBtn">+ Semana actual</button>
       <button class="btn primary" id="saveRecordBtn">💾 Descargar reporte consolidado (PDF / Imagen)</button>
     </div>
-
-    <div class="share-actions" id="share-consolidated" style="display:none; margin-top:14px;">
-      <span class="share-title">Ambos equipos completos · Compartir registro:</span>
-      <button class="icon-btn" data-action="share" data-target="both" title="Compartir">
-         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="share-icon-svg" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle>
-            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-          </svg>
-      </button>
-    </div>
   </section>
 
   <!-- ===== HISTÓRICO ===== -->
@@ -535,7 +522,7 @@
         <input type="file" id="importInput" accept="application/json">
       </div>
     </div>
-    <p class="intro">Consulta cualquier domingo guardado en el servidor. Toca una fila para ver el detalle de ambos equipos.</p>
+    <p class="intro">Consulta cualquier domingo guardado. Toca una fila para ver el detalle de ambos equipos.</p>
     <div class="hist-list" id="historicoList"></div>
   </section>
 
@@ -607,9 +594,10 @@
     return String(str).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   }
 
-  async function loadStoreFromSever(){
+  // Carga con Respaldo Automático en LocalStorage si el servidor falla
+  async function loadStoreFromServer(){
     try {
-      const response = await fetch('/api/checklists.php');
+      const response = await fetch('api/checklists.php');
       if(!response.ok) throw new Error('Error al conectar con el servidor');
       const data = await response.json();
       store = { encendido: data.encendido || {}, transmision: data.transmision || {} };
@@ -623,20 +611,18 @@
     renderPanel('transmision');
   }
 
-  async function persistToServer(){
+  async function persistData(){
     try {
-      const response = await fetch('/api/checklists.php', {
+      const response = await fetch('api/checklists.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(store)
       });
       if(!response.ok) throw new Error('Error al guardar en el servidor');
       storageOk = true;
-      return true;
     } catch(e) {
       storageOk = false;
       localStorage.setItem('checklist_backup_fallback', JSON.stringify(store));
-      return false;
     }
   }
 
@@ -691,7 +677,7 @@
         const entry = ensureEntry(team, date);
         entry.items[idx] = chk.checked;
         entry.updatedAt = new Date().toISOString();
-        await persistToServer();
+        await persistData();
         updateProgress(team);
         updateSaveIndicator(team, entry.updatedAt);
       });
@@ -724,16 +710,6 @@
     const isComplete = (done === total && total > 0);
     document.querySelector(`.panel[data-team="${team}"]`).classList.toggle('complete', isComplete);
     document.getElementById(`share-${team}`).style.display = isComplete ? 'flex' : 'none';
-    updateConsolidatedShareVisibility();
-  }
-
-  function updateConsolidatedShareVisibility(){
-    const eEntry = peekEntry('encendido', activeDate.encendido);
-    const tEntry = peekEntry('transmision', activeDate.transmision);
-    const eComplete = eEntry.items.length > 0 && eEntry.items.every(Boolean);
-    const tComplete = tEntry.items.length > 0 && tEntry.items.every(Boolean);
-    const block = document.getElementById('share-consolidated');
-    if(block) block.style.display = (eComplete && tComplete) ? 'flex' : 'none';
   }
 
   function updateSaveIndicator(team, updatedAt){
@@ -743,8 +719,8 @@
     const t = new Date(updatedAt);
     const hh = String(t.getHours()).padStart(2,'0');
     const mm = String(t.getMinutes()).padStart(2,'0');
-    textEl.textContent = storageOk ? `Guardado en servidor ✓ ${hh}:${mm}` : 'Error de sincronización con servidor';
-    el.classList.toggle('ok', storageOk);
+    textEl.textContent = storageOk ? `Guardado en servidor ✓ ${hh}:${mm}` : `Guardado localmente (Sin servidor) ${hh}:${mm}`;
+    el.classList.toggle('ok', true);
   }
 
   function renderNextSunday(){
@@ -764,7 +740,7 @@
         const entry = ensureEntry(team, date);
         entry.responsable = inputResp.value;
         entry.updatedAt = new Date().toISOString();
-        await persistToServer();
+        await persistData();
         updateSaveIndicator(team, entry.updatedAt);
       }, 400);
     });
@@ -777,7 +753,7 @@
         const entry = ensureEntry(team, date);
         entry.comentarios = inputComm.value;
         entry.updatedAt = new Date().toISOString();
-        await persistToServer();
+        await persistData();
         updateSaveIndicator(team, entry.updatedAt);
       }, 400);
     });
@@ -884,7 +860,7 @@
         e.stopPropagation();
         if(confirm(`¿Eliminar el registro del ${formatDateShort(date)}?`)){
           delete store.encendido[date]; delete store.transmision[date];
-          await persistToServer();
+          await persistData();
           renderHistorico();
         }
       });
@@ -893,6 +869,7 @@
     });
   }
 
+  // ---------- PDF/PNG Generation & Sharing ----------
   const REC = { W: 1200, MARGIN_X: 70, TOP_BLOCK: 164, TEAM_HEADER_H: 54, ITEM_LINE_H: 28, ITEM_GAP: 14, TEAM_GAP: 46, BOTTOM_BLOCK: 80 };
 
   function wrapText(ctx, text, maxWidth){
@@ -985,22 +962,65 @@
       a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
     }, 'image/png');
   }
-  function downloadCanvasPDF(canvas, filename){
-    if(!window.jspdf) return; const { jsPDF } = window.jspdf; const imgData = canvas.toDataURL('image/png');
-    const pageWidth = 595.28; const scale = pageWidth / canvas.width; const pageHeight = canvas.height * scale;
-    const pdf = new jsPDF({ unit:'pt', format:[pageWidth, pageHeight] }); pdf.addImage(imgData, 'PNG', 0, 0, pageWidth, pageHeight); pdf.save(filename);
+
+  // --- Función de Compartir Restaurada y Funcional ---
+  async function handleShare(targetTeam, btnEl) {
+    const originalContent = btnEl.innerHTML;
+    btnEl.disabled = true;
+    btnEl.innerHTML = '…';
+    try {
+      if(document.fonts && document.fonts.ready){ await document.fonts.ready; }
+
+      const teamsList = [targetTeam];
+      const datesObj = { [targetTeam]: activeDate[targetTeam] };
+      const label = TEAMS[targetTeam].label;
+      const filenameBase = `Resultados_${label}_${activeDate[targetTeam]}`.replace(/\s+/g, '_');
+      const filename = `${filenameBase}.png`;
+
+      const canvas = buildCanvasForTeams(teamsList, datesObj);
+
+      canvas.toBlob(async (blob) => {
+        const file = new File([blob], filename, { type: 'image/png' });
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+            try {
+              await navigator.share({
+                files: [file],
+                title: `Resultados ${label}`,
+                text: `Te comparto los resultados de ${label}.`
+              });
+            } catch (err) {
+              console.log('Compartir cancelado:', err);
+            }
+        } else {
+            downloadCanvasPNG(canvas, filename);
+        }
+      }, 'image/png');
+      
+    } catch (err) {
+       console.error(err); alert('Error al generar para compartir: ' + err.message);
+    } finally {
+       btnEl.disabled = false; btnEl.innerHTML = originalContent;
+    }
   }
-  async function generateAndDownloadRecord(teamsList, datesObj, btnEl){
-    const original = btnEl ? btnEl.innerHTML : null;
-    if(btnEl){ btnEl.disabled = true; btnEl.innerHTML = '…'; }
+
+  // Enlace de eventos de los botones de compartir
+  document.querySelectorAll('[data-action="share"]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+       const target = e.currentTarget.dataset.target;
+       handleShare(target, e.currentTarget);
+    });
+  });
+
+  document.getElementById('saveRecordBtn').addEventListener('click', async (e)=>{
+    const btn = e.currentTarget;
+    const original = btn.innerHTML;
+    btn.disabled = true; btn.innerHTML = '…';
     try{
       if(document.fonts && document.fonts.ready){ await document.fonts.ready; }
-      const canvas = buildCanvasForTeams(teamsList, datesObj);
-      const slug = teamsList.map(t => datesObj[t]).join('_');
-      downloadCanvasPNG(canvas, `registro-${slug}.png`);
-      downloadCanvasPDF(canvas, `registro-${slug}.pdf`);
-    }finally{ if(btnEl){ btnEl.disabled = false; btnEl.innerHTML = original; } }
-  }
+      const canvas = buildCanvasForTeams(['encendido', 'transmision'], activeDate);
+      downloadCanvasPNG(canvas, `registro-completo-${activeDate.encendido}.png`);
+    }finally{ btn.disabled = false; btn.innerHTML = original; }
+  });
 
   document.getElementById('exportBtn').addEventListener('click', ()=>{
     const blob = new Blob([JSON.stringify(store, null, 2)], { type:'application/json' });
@@ -1019,9 +1039,9 @@
         const parsed = JSON.parse(e.target.result);
         if(parsed && parsed.encendido && parsed.transmision){
           store = { encendido: parsed.encendido, transmision: parsed.transmision };
-          await persistToServer();
+          await persistData();
           renderPanel('encendido'); renderPanel('transmision'); renderHistorico();
-          alert('Respaldo importado y sincronizado al servidor.');
+          alert('Respaldo importado correctamente.');
         }
       }catch(err){ alert('Archivo inválido.'); }
       importInput.value = '';
@@ -1034,7 +1054,7 @@
   wireInputs('encendido');
   wireInputs('transmision');
   renderNextSunday();
-  loadStoreFromSever();
+  loadStoreFromServer();
 
 })();
 </script>
